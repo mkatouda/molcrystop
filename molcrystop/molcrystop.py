@@ -136,6 +136,7 @@ def ac_run(pm, ff='gaff2', charge_model='bcc'):
         molfile = resname + '.mol'
         mol2file = resname + '.mol2'
         pdbfile = resname + '.pdb'
+        frcmodfile = resname + '.frcmod'
         g16infile = resname + '.com'
         g16outfile = resname + '.log'
         respfile = resname + '_resp_charge.out'
@@ -149,11 +150,12 @@ def ac_run(pm, ff='gaff2', charge_model='bcc'):
             #cmd = ['antechamber', '-fi', 'mdl', '-fo', 'mol2', '-at', ff, '-c', 'rc', '-cf', respfile, '-rn', resname,'-i', molfile, '-o', mol2file]
         else:
             cmd = ['antechamber', '-fi', 'mdl', '-fo', 'mol2', '-at', ff, '-c', charge_model, '-rn', resname,'-i', molfile, '-o', mol2file]
-        print(' '.join(cmd))
         run_cmd(cmd)
 
         cmd = ['antechamber', '-fi', 'mol2', '-fo', 'pdb', '-i', mol2file, '-o', pdbfile]
-        print(' '.join(cmd))
+        run_cmd(cmd)
+
+        cmd = ['parmchk2', '-i', mol2file, '-o', frcmodfile, '-f', 'mol2']
         run_cmd(cmd)
 
         atoms = read(pdbfile, format='proteindatabank')
@@ -169,6 +171,11 @@ def tleap_run(pm, cryspdb_path='model.pdb', leapin_path='leap.in'):
     crd_path = root + '.crd'
 
     s = 'source leaprc.gaff\n\n'
+    for i, p in enumerate(pm):
+        resname = 'M{:02}'.format(i+1)
+        frcmod_path = resname + '.frcmod'
+        s += 'loadamberparams {}\n'.format(frcmod_path)
+    s += '\n'
     for i, p in enumerate(pm):
         resname = 'M{:02}'.format(i+1)
         mol2_path = resname + '.mol2'
