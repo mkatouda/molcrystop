@@ -12,7 +12,7 @@ cryspdbfile: 'model.pdb'
 leapinfile: 'leap.in'
 
 geom_opt: True
-#sim_methods: ['lammps'] # ['xtb'] ['dftb'] ['qe']
+sim_methods: ['lammps'] # ['xtb'] ['dftb'] ['qe']
 #sim_methods: ['lammps', 'xtb']
 #sim_methods: ['lammps', 'dftb', 'qe']
 kpts: [2, 2, 2]
