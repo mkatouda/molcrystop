@@ -489,8 +489,8 @@ def crystop_main(conf):
     espresso_command = conf['espresso_command']
     espresso_pseudo = conf['espresso_pseudo']
 
-    g16root = conf['g16root']
-    gauss_scrdir = conf['gauss_scrdir']
+    #g16root = conf['g16root']
+    #gauss_scrdir = conf['gauss_scrdir']
 
     ps_path = espresso_pseudo
 
