@@ -367,7 +367,25 @@ def get_ase_calculator(atoms, sim_method='LAMMPS', top_path='model.input', kpts=
         from ase.calculators.dftb import Dftb
         calc = Dftb(kpts=kpts,
                     Hamiltonian_='xTB',
-                    Hamiltonian_Method=xtb_hamiltonian)
+                    Hamiltonian_Method=xtb_hamiltonian,
+                    Hamiltonian_MaxAngularMomentum_='',
+                    Hamiltonian_MaxAngularMomentum_H='s',
+                    Hamiltonian_MaxAngularMomentum_C='p',
+                    Hamiltonian_MaxAngularMomentum_N='p',
+                    Hamiltonian_MaxAngularMomentum_O='p',
+                    Hamiltonian_MaxAngularMomentum_S='d',
+                    Hamiltonian_MaxAngularMomentum_P='d',
+                    Hamiltonian_MaxAngularMomentum_Br='d',
+                    Hamiltonian_MaxAngularMomentum_Cl='d',
+                    Hamiltonian_MaxAngularMomentum_F='p',
+                    Hamiltonian_MaxAngularMomentum_I='d'
+        )
+        # Treatment for ASE DFTB+ calculator when using xTB
+        s = 'Hamiltonian_SlaterKosterFiles_'
+        rm_keys = [key for key in calc.parameters.keys() if key.startswith(s)]
+        #s = 'Hamiltonian_MaxAngularMomentum_'
+        #rm_keys += [key for key in calc.parameters.keys() if key.startswith(s)]
+        for key in rm_keys: del calc.parameters[key]
 
     return calc
 

@@ -3,7 +3,7 @@ smile: 'OCC'
 
 verbose: True
 ff: 'gaff2' # 'gaff'
-charge_model: 'bcc' #'bcc' 'gas' 'resp'
+charge_model: 'bcc' # 'bcc' 'gas' 'resp'
 qe_input: {system: {'vdw_corr': 'DFT-D3', 'dftd3_version': 3}}
 xtb_hamiltonian: 'GFN2-xTB'
 
@@ -12,14 +12,15 @@ cryspdbfile: 'model.pdb'
 leapinfile: 'leap.in'
 
 geom_opt: True
-sim_methods: ['lammps'] # ['xtb'] ['dftb'] ['qe']
-#sim_methods: ['lammps', 'xtb']
+#sim_methods: ['lammps'] # ['xtb'] ['dftb'] ['qe']
+sim_methods: ['lammps', 'xtb']
 #sim_methods: ['lammps', 'dftb', 'qe']
 kpts: [2, 2, 2]
 
 opt_method: 'LBFGS'
 fmax: [5.0e-4, 5.0e-3, 5.0e-3]
-opt_maxsteps: [300, 30, 1]
+opt_maxsteps: [300, 5, 1]
+#opt_maxsteps: [300, 30, 1]
 #opt_maxsteps: [1, 1, 1]
 
 dftb_command: 'dftb+ > PREFIX.out'
