@@ -325,7 +325,7 @@ def write_proteindatabank(fileobj, images, write_arrays=True):
         fileobj.write('ENDMDL\n')
 
 def get_ase_calculator(atoms, sim_method='LAMMPS', top_path='model.input', kpts=(1,1,1), ps_path=None,
-                       qe_input={'system': {'vdw_corr': 'DFT-D3', 'dftd3_version': 3}},
+                       qe_input={'system': {'vdw_corr': 'DFT-D3', 'dftd3_version': 3}}, cp2k_input='',
                        xtb_hamiltonian='GFN2-xTB'):
     if sim_method.upper() == 'LAMMPS':
         from molcrystop.lammpslib import LAMMPSlib
@@ -365,11 +365,14 @@ def get_ase_calculator(atoms, sim_method='LAMMPS', top_path='model.input', kpts=
         from ase.calculators.espresso import Espresso
         pseudopotentials = get_qepsdict(ps_path)
         print('QE pseudopotentials:', pseudopotentials)
-        input_data = qe_input
-        print('QE input_data:', input_data)
+        print('QE input_data:', qe_input)
         calc = Espresso(pseudopotentials=pseudopotentials,
                         tstress=True, tprnfor=True, kpts=kpts,
-                        input_data=input_data)
+                        input_data=qe_input)
+    elif sim_method.upper() == 'CP2K':
+        from ase.calculators.cp2k import CP2K
+        print('CP2K input_data:\n', cp2k_input)
+        calc = CP2K(inp=cp2k_input)
     else:
         from ase.calculators.dftb import Dftb
         calc = Dftb(kpts=kpts,
@@ -397,7 +400,7 @@ def get_ase_calculator(atoms, sim_method='LAMMPS', top_path='model.input', kpts=
     return calc
 
 def crys_geom_opt(ase_struc, sim_method='LAMMPS', top_path='model.input', kpts=(1,1,1), ps_path=None,
-                  qe_input={'system': {'vdw_corr': 'DFT-D3', 'dftd3_version': 3}},
+                  qe_input={'system': {'vdw_corr': 'DFT-D3', 'dftd3_version': 3}}, cp2k_input='',
                   xtb_hamiltonian='GFN2-xTB',
                   opt_method='LBFGS', fmax=5e-2, opt_maxsteps=100, 
                   log_path='-', traj_path='crys_geom_opt.traj', maxstep=0.01, symprec=0.1):
@@ -412,6 +415,7 @@ def crys_geom_opt(ase_struc, sim_method='LAMMPS', top_path='model.input', kpts=(
         kpts=kpts,
         ps_path=ps_path,
         qe_input=qe_input,
+        cp2k_input=cp2k_input,
         xtb_hamiltonian=xtb_hamiltonian
     )
     ase_struc.calc = calc
@@ -493,6 +497,7 @@ def crystop_main(conf):
     charge_model = conf['charge_model']
 
     qe_input = conf['qe_input']
+    cp2kinp_path = conf['cp2k_input']
     xtb_hamiltonian = conf['xtb_hamiltonian']
 
     nxyz = conf['nxyz']
@@ -514,16 +519,31 @@ def crystop_main(conf):
     espresso_command = conf['espresso_command']
     espresso_pseudo = conf['espresso_pseudo']
 
+    cp2k_command = conf['cp2k_command']
+    cp2k_data_dir = conf['cp2k_data_dir']
+
     #g16root = conf['g16root']
     #gauss_scrdir = conf['gauss_scrdir']
 
     ps_path = espresso_pseudo
 
-    os.environ['ASE_DFTB_COMMAND'] = dftb_command
-    os.environ['DFTB_PREFIX'] = dftb_prefix
+    if os.getenv('ASE_DFTB_COMMAND') is None:
+        os.environ['ASE_DFTB_COMMAND'] = dftb_command
+    if os.getenv('DFTB_PREFIX') is None:
+        os.environ['DFTB_PREFIX'] = dftb_prefix
 
-    os.environ['ASE_ESPRESSO_COMMAND'] = espresso_command
-    os.environ['ESPRESSO_PSEUDO'] = espresso_pseudo
+    if os.getenv('ASE_ESPRESSO_COMMAND') is None:
+        os.environ['ASE_ESPRESSO_COMMAND'] = espresso_command
+    if os.getenv('ESPRESSO_PSEUDO') is None:
+        os.environ['ESPRESSO_PSEUDO'] = espresso_pseudo
+
+    if os.getenv('ASE_CP2K_COMMAND') is None:
+        os.environ['ASE_CP2K_COMMAND'] = cp2k_command
+    if os.getenv('CP2K_DATA_DIR') is None:
+        os.environ['CP2K_DATA_DIR'] = cp2k_data_dir
+
+    cp2k_command = 'cp2k_shell.psmp'
+    cp2k_data_dir = '/home/z43901k/data/develop/cp2k/data'
 
     #os.environ['g16root'] = g16root
     #run_cmd(['source', g16root + '/bsd/g16.profile'])
@@ -565,6 +585,11 @@ def crystop_main(conf):
     #write(dftbin_path, atoms, format='gen')
 
     if geom_opt:
+        if os.path.isfile(cp2kinp_path):
+            with open(cp2kinp_path) as f: cp2k_input = f.read()
+        elif len(cp2kinp_path) > 0:
+            cp2k_input = cp2kinp_path
+
         opt_stats = []
         for i, sim_method in enumerate(sim_methods):
             traj_path = 'model_{}_opt.traj'.format(sim_method)
@@ -575,6 +600,7 @@ def crystop_main(conf):
                 kpts=kpts,
                 ps_path=ps_path,
                 qe_input=qe_input,
+                cp2k_input=cp2k_input,
                 xtb_hamiltonian=xtb_hamiltonian,
                 opt_method=opt_method,
                 fmax=fmax[i],

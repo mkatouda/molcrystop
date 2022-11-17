@@ -3,18 +3,20 @@ smile: 'OCC'
 
 verbose: True
 ff: 'gaff2' # 'gaff'
-charge_model: 'bcc' # 'bcc' 'gas' 'resp'
-qe_input: {system: {'vdw_corr': 'DFT-D3', 'dftd3_version': 3}}
+charge_model: 'bcc' # 'bcc' 'gas' 'resp' (resp requies gaussian 16)
 xtb_hamiltonian: 'GFN2-xTB'
+cp2k_input: ./inputs/cp2k_inp_template.inp
+qe_input: {system: {'vdw_corr': 'DFT-D3', 'dftd3_version': 3}}
 
 nxyz: [1, 1, 1]
 cryspdbfile: 'model.pdb'
 leapinfile: 'leap.in'
 
 geom_opt: True
-#sim_methods: ['lammps'] # ['xtb'] ['dftb'] ['qe']
+#sim_methods: ['lammps'] # ['xtb'] ['dftb'] ['cp2k'] ['qe']
 sim_methods: ['lammps', 'xtb']
-#sim_methods: ['lammps', 'dftb', 'qe']
+#sim_methods: ['lammps', 'xtb', 'cp2k']
+#sim_methods: ['lammps', 'xtb', 'qe']
 kpts: [2, 2, 2]
 
 opt_method: 'LBFGS'
@@ -28,3 +30,7 @@ dftb_prefix: '/path/to/param/dftb/3ob-3-1/'
 
 espresso_command: 'pw.x -in PREFIX.pwi > PREFIX.pwo'
 espresso_pseudo: '/path/to/param/qe/SSSP_1.1.2_PBE_efficiency/'
+
+cp2k_command: 'cp2k_shell.ssmp'
+cp2k_data_dir: '/path/to/data/develop/cp2k/data'
+
